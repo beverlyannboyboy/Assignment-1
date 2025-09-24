@@ -12,7 +12,10 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ###1. Use the R internal CO2 dataset (“data(CO2)”).
 ```{r}
+#load the dataset
 data(CO2)
+
+#view summary
 summary(CO2)
 ```
 
@@ -22,24 +25,27 @@ summary(CO2)
 ```
 
 ###3. What is the average and median CO2 uptake of the plants from Quebec and Mississippi?
+
 ```{r}
-# Subset data by Treatment
+# Separate the CO2 uptake values by plant origin
 co2_quebec <- CO2$uptake[CO2$Type == "Quebec"]
 co2_mississippi <- CO2$uptake[CO2$Type == "Mississippi"]
 
-# Calculate mean and median
+# Compute mean and median for each
 mean_quebec <- mean(co2_quebec)
 median_quebec <- median(co2_quebec)
 
-mean_miss <- mean(co2_mississippi)
-median_miss <- median(co2_mississippi)
+mean_mississippi <- mean(co2_mississippi)
+median_mississippi <- median(co2_mississippi)
 
 mean_quebec
 median_quebec
-mean_miss
-median_miss
+mean_mississippi
+median_mississippi
 ```
+
 ###3. [Optional] In the “airway” example data from Bioconductor, how many genes are expressed in each sample? How many genes are not expressed in any sample?
+
 ```{r}
 #install if not yet done
 #if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -51,14 +57,14 @@ library(airway)
 data(airway)
 assay_data <- assay(airway)
 
-# Genes expressed per sample
+# Count genes expressed in each sample (expression > 0)
 expressed_genes_per_sample <- colSums(assay_data > 0)
 
-# Genes never expressed in any sample
-genes_never_expressed <- sum(rowSums(assay_data) == 0)
+# Count genes never expressed in any sample (expression == 0)
+never_expressed_genes <- sum(rowSums(assay_data) == 0)
 
 expressed_genes_per_sample
-genes_never_expressed
+never_expressed_genes
 ```
 
 
