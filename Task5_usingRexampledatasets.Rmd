@@ -1,0 +1,64 @@
+---
+title: "Using the R example datasets"
+author: "Beverly Ann Boyboy"
+date: "2025-09-24"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+###1. Use the R internal CO2 dataset (“data(CO2)”).
+```{r}
+data(CO2)
+summary(CO2)
+```
+
+###2. Describe briefly the content of the CO2 dataset using the help function
+```{r}
+?CO2
+```
+
+###3. What is the average and median CO2 uptake of the plants from Quebec and Mississippi?
+```{r}
+# Subset data by Treatment
+co2_quebec <- CO2$uptake[CO2$Type == "Quebec"]
+co2_mississippi <- CO2$uptake[CO2$Type == "Mississippi"]
+
+# Calculate mean and median
+mean_quebec <- mean(co2_quebec)
+median_quebec <- median(co2_quebec)
+
+mean_miss <- mean(co2_mississippi)
+median_miss <- median(co2_mississippi)
+
+mean_quebec
+median_quebec
+mean_miss
+median_miss
+```
+###3. [Optional] In the “airway” example data from Bioconductor, how many genes are expressed in each sample? How many genes are not expressed in any sample?
+```{r}
+#install if not yet done
+#if (!requireNamespace("BiocManager", quietly = TRUE))
+#    install.packages("BiocManager")
+
+#BiocManager::install("airway")
+
+library(airway)
+data(airway)
+assay_data <- assay(airway)
+
+# Genes expressed per sample
+expressed_genes_per_sample <- colSums(assay_data > 0)
+
+# Genes never expressed in any sample
+genes_never_expressed <- sum(rowSums(assay_data) == 0)
+
+expressed_genes_per_sample
+genes_never_expressed
+```
+
+
