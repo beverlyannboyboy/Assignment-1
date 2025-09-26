@@ -5,7 +5,8 @@ The data shows some interesting patterns. For rheumatoid arthritis, the relevant
 even though these genes are expressed in many cell types. Heart attack risk variants seem to work through regulatory elements in blood vessel cells - the smooth muscle cells, 
 endothelial cells, and fibroblasts that make up arteries and veins. Height-related variants target cartilage cells (chondrocytes) and affect key bone development genes including SOX9 and RUNX2.
 This approach could change how we think about treating diseases. Instead of just knowing that a genetic variant increases disease risk, we now know which cell types to target and which regulatory 
-pathways are involved. It also helps explain why many disease variants fall in non-coding regions of the genome - they're affecting the switches that turn genes on and off rather than the genes themselves.
+pathways are involved. It also helps explain why many disease variants fall in non-coding regions of the genome - they're affecting the switches that turn genes on and off rather than the genes 
+themselves.
 
 2. Which genomics technology/ technologies were used?
 •  Single-cell 3’ RNA-seq (sc-end3-dT) – for gene expression profiling at the 3′ end of transcripts in individual cells.
