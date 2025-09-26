@@ -1,0 +1,126 @@
+---
+title: "Task8: Tidybiology Chromosome Data Analysis"
+author: "Beverly Ann Boyboy"
+date: "2025-09-26"
+output: html_document
+---
+  
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+# Load required libraries
+library(tidybiology)
+library(dplyr)
+library(knitr)
+library(tidyr)
+library(ggplot2)
+# Load the chromosome dataset
+data("chromosome")
+```
+
+```{r, Part A: Summary statistics for selected variables}
+summary_stats <- chromosome %>%
+  summarise(
+    across(c(variations, protein_codinggenes, mi_rna),
+           list(mean   = ~mean(., na.rm = TRUE),
+                median = ~median(., na.rm = TRUE),
+                max    = ~max(., na.rm = TRUE)))
+  ) %>%
+  pivot_longer(
+    cols = everything(),
+    names_to = c("variable", ".value"),
+    names_pattern = "^(.*)_(mean|median|max)$"
+  ) %>%
+  mutate(across(c(mean, median, max), round, 2),
+         variable = recode(variable,
+                           "variations" = "Variations",
+                           "protein_codinggenes" = "Protein coding genes",
+                           "mi_rna" = "miRNA"))
+
+kable(summary_stats, caption = "Summary Statistics for selected chromosome variables")
+```
+
+```{r, Part B: Chromosome size distribution}
+#Histogram for chromosome lengths
+ggplot(chromosome, aes(x = length_mm)) +
+  geom_histogram(bins = 15, fill = "steelblue", color = "black") +
+  geom_vline(aes(xintercept = mean(length_mm, na.rm = TRUE)), color = "red", linetype = "dashed") +
+  geom_vline(aes(xintercept = median(length_mm, na.rm = TRUE)), color = "orange", linetype = "dashed") +
+  labs(title = "Chromosome Length Distribution",
+       x = "Length (mm)",
+       y = "Count",
+       subtitle = "Red = mean, Orange = median") +
+  theme_minimal()
+# Boxplot for chromosome lengths
+ggplot(chromosome, aes(y = length_mm)) +
+  geom_boxplot(fill = "lightblue", alpha = 0.7) +
+  geom_jitter(aes(x = 0), width = 0.1, alpha = 0.6, color = "darkblue") +
+  labs(title = "Chromosome Length Distribution (Boxplot)",
+       y = "Length (mm)",
+       x = "") +
+  theme_minimal() +
+  coord_flip()
+```
+
+```{r, Part C: Correlation analysis}
+# Protein coding genes vs chromosome length
+ggplot(chromosome, aes(x = length_mm, y = protein_codinggenes)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "blue") +
+  labs(title = "Protein Coding Genes vs Chromosome Length",
+       x = "Chromosome Length (mm)", y = "Protein Coding Genes") +
+  theme_minimal()
+
+# miRNAs vs chromosome length
+ggplot(chromosome, aes(x = length_mm, y = mi_rna)) +
+  geom_point() +
+  geom_smooth(method = "lm", se = FALSE, color = "red") +
+  labs(title = "miRNAs vs Chromosome Length",
+       x = "Chromosome Length (mm)", y = "miRNAs") +
+  theme_minimal()
+
+# Correlation coefficients
+correlation_table <- data.frame(
+  Variable = c("Protein Coding Genes", "miRNAs"),
+  Correlation = c(
+    cor(chromosome$length_mm, chromosome$protein_codinggenes, use = "complete.obs"),
+    cor(chromosome$length_mm, chromosome$mi_rna, use = "complete.obs")
+  )
+) %>%
+  mutate(Correlation = round(Correlation, 3))
+
+kable(correlation_table, caption = "Correlation with Chromosome Length")
+
+#Does the number of protein coding genes or miRNAs correlate with the length of the chromosome? 
+#Yes,as chromosome length increases, the number of protein coding genes and miRNAs also tends to increase. Also, both correlation values are moderately strong and positive (protein-coding genes vs chromosome length: 0.606; miRNAs vs chromosome length: 0.737)
+```
+
+```{r, Part D: Protein data analysis}
+proteins %>%
+  summarise(across(c(length, mass),
+                   list(mean = ~mean(., na.rm = TRUE),
+                        median = ~median(., na.rm = TRUE),
+                        max = ~max(., na.rm = TRUE)))) %>%
+  pivot_longer(cols = everything(),
+               names_to = c("variable", ".value"),
+               names_pattern = "^(.*)_(mean|median|max)$") %>%
+  mutate(across(c(mean, median, max), round, 2)) %>%
+  kable(caption = "Summary Statistics for Protein Variables")
+
+# Protein length vs mass plot
+ggplot(proteins, aes(x = length, y = mass)) +
+  geom_point(alpha = 0.7, color = "steelblue", size = 2) +
+  geom_smooth(method = "lm", color = "tomato", size = 1.2, se = TRUE) +
+  labs(title = "Protein Mass vs Length",
+       x = "Protein Length", 
+       y = "Protein Mass") +
+  theme_light(base_size = 12) +
+  theme(
+    plot.title = element_text(face = "bold", size = 16),
+    plot.subtitle = element_text(size = 12),
+    axis.title = element_text(face = "bold"),
+    panel.grid.major = element_line(color = "gray80"),
+    panel.grid.minor = element_line(color = "gray90")
+  )
+```
+
