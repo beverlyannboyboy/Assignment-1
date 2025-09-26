@@ -1,0 +1,425 @@
+---
+title: "Task7_BasicvisualizationwithR"
+author: "Beverly Ann Boyboy"
+date: "2025-09-26"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+# Load required libraries
+library(ggplot2)
+library(gridExtra)
+library(dplyr)
+library(knitr)
+```
+
+```{r}
+#Load dataset
+magic_guys <- read.csv("magic_guys.csv")
+
+#Display basic information
+head(magic_guys)
+str(magic_guys)
+
+# Check unique species
+species_names <- unique(magic_guys$species)
+print(species_names)
+```
+
+
+```{r, 1A: basic hist plots}
+# Base R histograms for both species with different bins
+
+# Set up plotting area (2 rows × 3 columns)
+par(mfrow = c(2, 3))
+
+# Extract species names
+species_names <- unique(magic_guys$species)
+
+# Separate data by species
+species1_data <- magic_guys$length[magic_guys$species == species_names[1]]
+species2_data <- magic_guys$length[magic_guys$species == species_names[2]]
+
+# Species 1 with different bins
+hist(species1_data, 
+     breaks = 10, 
+     main = paste(species_names[1], "- 10 bins"),
+     xlab = "Body Height", 
+     ylab = "Frequency",
+     col = "skyblue", 
+     border = "darkblue")
+
+hist(species1_data, 
+     breaks = 20, 
+     main = paste(species_names[1], "- 20 bins"),
+     xlab = "Body Height", 
+     ylab = "Frequency",
+     col = "lightgreen", 
+     border = "darkgreen")
+
+hist(species1_data, 
+     breaks = 30, 
+     main = paste(species_names[1], "- 30 bins"),
+     xlab = "Body Height", 
+     ylab = "Frequency",
+     col = "salmon", 
+     border = "darkred")
+
+# Species 2 with different bins
+hist(species2_data, 
+     breaks = 10, 
+     main = paste(species_names[2], "- 10 bins"),
+     xlab = "Body Height", 
+     ylab = "Frequency",
+     col = "gold", 
+     border = "orange")
+
+hist(species2_data, 
+     breaks = 20, 
+     main = paste(species_names[2], "- 20 bins"),
+     xlab = "Body Height", 
+     ylab = "Frequency",
+     col = "plum", 
+     border = "purple")
+
+hist(species2_data, 
+     breaks = 30, 
+     main = paste(species_names[2], "- 30 bins"),
+     xlab = "Body Height", 
+     ylab = "Frequency",
+     col = "lightcoral", 
+     border = "red")
+
+# Reset plotting layout
+par(mfrow = c(1,1))
+```
+
+```{r, 1A: geom_histogram}
+# -----------------------------
+# 1. Overlap histograms
+# -----------------------------
+p_overlap10 <- ggplot(magic_guys, aes(x = length, fill = species)) +
+  geom_histogram(bins = 10, alpha = 0.6, position = "identity") +
+  labs(title = "Histogram (Overlap, 10 bins)", x = "Body Height", y = "Frequency") +
+  theme_minimal() +
+  scale_fill_manual(values = c("steelblue", "coral"))
+
+p_overlap20 <- ggplot(magic_guys, aes(x = length, fill = species)) +
+  geom_histogram(bins = 20, alpha = 0.6, position = "identity") +
+  labs(title = "Histogram (Overlap, 20 bins)", x = "Body Height", y = "Frequency") +
+  theme_minimal() +
+  scale_fill_manual(values = c("steelblue", "coral"))
+
+p_overlap30 <- ggplot(magic_guys, aes(x = length, fill = species)) +
+  geom_histogram(bins = 30, alpha = 0.6, position = "identity") +
+  labs(title = "Histogram (Overlap, 30 bins)", x = "Body Height", y = "Frequency") +
+  theme_minimal() +
+  scale_fill_manual(values = c("steelblue", "coral"))
+
+grid.arrange(p_overlap10, p_overlap20, p_overlap30, ncol = 1)
+
+# -----------------------------
+# 2. Separate histograms by species
+# -----------------------------
+
+# Bin sizes to try
+bins_list <- c(10, 20, 30)
+
+# Colors for each species
+species_colors <- c("steelblue", "coral")
+
+# Initialize plot list
+plots <- list()
+plot_index <- 1
+
+# Loop over species and bins
+for (sp in species_names) {
+  species_data <- magic_guys[magic_guys$species == sp, ]
+  
+  for (b in bins_list) {
+    plots[[plot_index]] <- ggplot(species_data, aes(x = length)) +
+      geom_histogram(bins = b, fill = species_colors[which(species_names == sp)],
+                     color = "black", alpha = 0.7) +
+      labs(title = paste(sp, "-", b, "bins"),
+           x = "Body Height",
+           y = "Frequency") +
+      theme_minimal()
+    plot_index <- plot_index + 1
+  }
+}
+
+# Arrange in 2 rows × 3 columns, like base R
+grid.arrange(grobs = plots, nrow = 2, ncol = 3)
+```
+
+```{r, 1B: boxplots}
+# -----------------------------
+# Part B: Boxplot Comparisons
+# -----------------------------
+
+# 1. Basic R boxplot
+boxplot(length ~ species, 
+        data = magic_guys,
+        main = "Body Height Distribution by Species (Basic R)",
+        xlab = "Species",
+        ylab = "Body Height",
+        col = c("lightblue", "lightcoral"),
+        border = c("darkblue", "darkred"),
+        notch = TRUE)  # Notches indicate approximate 95% CI for the median
+
+# Overlay individual data points
+stripchart(length ~ species, 
+           data = magic_guys,
+           vertical = TRUE,
+           method = "jitter",
+           add = TRUE,
+           pch = 16,
+           col = c("darkblue", "darkred"),
+           cex = 0.6)
+
+# 2. ggplot2 boxplot
+p_box_points <- ggplot(magic_guys, aes(x = species, y = length, fill = species)) +
+  geom_boxplot(alpha = 0.7, outlier.shape = NA) +  # Hide default outliers
+  geom_jitter(width = 0.2, alpha = 0.6, size = 1.5) +  # Show individual points
+  labs(title = "Body Height Distribution by Species (ggplot2)",
+       x = "Species",
+       y = "Body Height") +
+  scale_fill_manual(values = c("lightblue", "salmon")) +
+  theme_minimal() +
+  theme(legend.position = "none")
+print(p_box_points)
+```
+
+```{r, 1C: save plots}
+# Create directory for saved plots
+plots_dir <- "plots"
+dir.create(plots_dir)
+
+# -----------------------------
+# Save ggplot2 plots
+# -----------------------------
+# Histogram (overlap, bins = 20)
+ggsave(file.path(plots_dir, "ggplot_histogram.png"), p_overlap20, width = 10, height = 6, dpi = 300)
+ggsave(file.path(plots_dir, "ggplot_histogram.pdf"), p_overlap20, width = 10, height = 6)
+ggsave(file.path(plots_dir, "ggplot_histogram.svg"), p_overlap20, width = 10, height = 6)
+
+# Boxplot with individual points
+ggsave(file.path(plots_dir, "ggplot_boxplot.png"), p_box_points, width = 8, height = 6, dpi = 300)
+ggsave(file.path(plots_dir, "ggplot_boxplot.pdf"), p_box_points, width = 8, height = 6)
+ggsave(file.path(plots_dir, "ggplot_boxplot.svg"), p_box_points, width = 8, height = 6)
+
+# -----------------------------
+# Save basic R histograms separately (breaks=20)
+# -----------------------------
+# Species 1
+png(file.path(plots_dir, paste0("basic_r_hist_", species_names[1], ".png")), 
+    width = 1200, height = 800, res = 300)
+hist(species1_data, breaks = 20,
+     main = paste("Body Height -", species_names[1]),
+     xlab = "Body Height", ylab = "Frequency",
+     col = "skyblue", border = "darkblue", cex.main=1.5, cex.lab=1.2, cex.axis=1)
+dev.off()
+
+pdf(file.path(plots_dir, paste0("basic_r_hist_", species_names[1], ".pdf")), width = 10, height = 7)
+hist(species1_data, breaks = 20,
+     main = paste("Body Height -", species_names[1]),
+     xlab = "Body Height", ylab = "Frequency",
+     col = "skyblue", border = "darkblue", cex.main=1.5, cex.lab=1.2, cex.axis=1)
+dev.off()
+
+# Species 2
+png(file.path(plots_dir, paste0("basic_r_hist_", species_names[2], ".png")), 
+    width = 1200, height = 800, res = 300)
+hist(species2_data, breaks = 20,
+     main = paste("Body Height -", species_names[2]),
+     xlab = "Body Height", ylab = "Frequency",
+     col = "coral", border = "darkred", cex.main=1.5, cex.lab=1.2, cex.axis=1)
+dev.off()
+
+pdf(file.path(plots_dir, paste0("basic_r_hist_", species_names[2], ".pdf")), width = 10, height = 7)
+hist(species2_data, breaks = 20,
+     main = paste("Body Height -", species_names[2]),
+     xlab = "Body Height", ylab = "Frequency",
+     col = "coral", border = "darkred", cex.main=1.5, cex.lab=1.2, cex.axis=1)
+dev.off()
+#When to save:
+#PDF: For printing, academic publications, professional reports
+#PNG: For digital presentations, documentation, file sharing
+#SVG: For web development, interactive visualizations, editability
+```
+
+```{r, Part 2: Load microarray data}
+# -----------------------------
+# Load the gene expression data
+# -----------------------------
+microarray_data <- read.table("microarray_data.tab", header = TRUE, sep = "\t", check.names = FALSE)
+
+# Replace missing gene names in the first column
+gene_names <- as.character(microarray_data[,1])
+na_idx <- which(is.na(gene_names) | gene_names == "")
+gene_names[na_idx] <- paste0("Gene_missing_", seq_along(na_idx))
+
+# Make rownames unique
+rownames(microarray_data) <- make.unique(gene_names)
+
+# Remove the first column (original gene names)
+microarray_data <- microarray_data[ , -1]
+
+# Show first few rows
+head(microarray_data[, 1:6])
+```
+
+```{r, 2A: Miacroarray data: matrix dimensions}
+microarray_data <- read.table("microarray_data.tab", header = TRUE, sep = "\t", check.names = FALSE)
+
+# Fix missing gene names
+gene_names <- as.character(microarray_data[,1])
+na_idx <- which(is.na(gene_names) | gene_names == "")
+gene_names[na_idx] <- paste0("Gene_missing_", seq_along(na_idx))
+
+# Make rownames unique and remove original column
+rownames(microarray_data) <- make.unique(gene_names)
+microarray_data <- microarray_data[ , -1]
+
+# Preview data
+head(microarray_data[, 1:6])
+```
+
+```{r, 2B: Miacroarray data: missing values per gene}
+# Number of samples
+n_cols <- ncol(microarray_data)
+
+# Count missing values
+missing_per_gene <- rowSums(is.na(microarray_data))
+missing_summary <- data.frame(
+  gene = rownames(microarray_data),
+  missing_count = missing_per_gene,
+  missing_percent = round((missing_per_gene / n_cols) * 100, 2)  # consistent name
+)
+
+# Summary stats
+cat("Genes with missing values:", sum(missing_per_gene > 0), "\n")
+cat("Max missing per gene:", max(missing_per_gene), "\n")
+cat("Avg missing per gene:", round(mean(missing_per_gene), 2), "\n")
+
+# Histogram of missing counts
+ggplot(missing_summary, aes(x = missing_count)) +
+  geom_histogram(bins = 30, fill = "skyblue", color = "black", alpha = 0.7) +
+  labs(title = "Missing Values per Gene", x = "Missing Count", y = "Genes") +
+  theme_minimal()
+
+# Histogram of missing percentages
+ggplot(missing_summary, aes(x = missing_percent)) +
+  geom_histogram(bins = 30, fill = "lightcoral", color = "black", alpha = 0.7) +
+  labs(title = "Missing Values Percentage", x = "% Missing", y = "Genes") +
+  theme_minimal()
+```
+
+```{r, 2C: Miacroarray data: Genes exceeding missing value thresholds}
+thresholds <- c(10, 20, 50)
+threshold_summary <- data.frame(
+  threshold = paste0(">", thresholds, "%"),
+  gene_count = sapply(thresholds, function(x) sum(missing_summary$missing_percent > x))
+)
+
+kable(threshold_summary, caption = "Genes exceeding missing value thresholds")
+
+# Categorize genes by missing value percentage
+missing_summary$category <- cut(
+  missing_summary$missing_percent,
+  breaks = c(-1, 10, 20, 50, 100),
+  labels = c("≤10%", "10-20%", "20-50%", ">50%")
+)
+
+ggplot(missing_summary, aes(x = category, fill = category)) +
+  geom_bar() +
+  labs(title = "Genes by Missing Value Category", x = "Category", y = "Count") +
+  theme_minimal() +
+  scale_fill_manual(values = c("lightgreen", "gold", "tomato", "purple")) +
+  theme(legend.position = "none")
+```
+
+```{r, 2D: Miacroarray data: Impute missing values with gene mean}
+# Number of samples
+n_samples <- ncol(microarray_data)
+
+# Impute missing values with gene averages
+imputed_data <- microarray_data
+gene_means <- rowMeans(imputed_data, na.rm = TRUE)
+
+for (i in 1:nrow(imputed_data)) {
+  missing_idx <- is.na(imputed_data[i, ])
+  if (any(missing_idx)) imputed_data[i, missing_idx] <- gene_means[i]
+}
+
+cat("Missing before:", sum(is.na(microarray_data)), "\n")
+cat("Missing after:", sum(is.na(imputed_data)), "\n")
+
+# Visualize first gene with missing values
+first_gene <- which(missing_per_gene > 0)[1]  # use missing_per_gene
+gene_name <- rownames(microarray_data)[first_gene]
+
+comparison <- data.frame(
+  sample = 1:n_samples,
+  original = as.numeric(microarray_data[first_gene, ]),
+  imputed = as.numeric(imputed_data[first_gene, ])
+) %>%
+  pivot_longer(cols = c(original, imputed), names_to = "type", values_to = "expr")
+
+ggplot(comparison, aes(x = sample, y = expr, color = type)) +
+  geom_point(alpha = 0.7) +
+  geom_line(alpha = 0.5) +
+  labs(title = paste(gene_name, "- before vs after imputation"), x = "Sample", y = "Expression", color = "Data") +
+  theme_minimal() +
+  scale_color_manual(values = c("original" = "red3", "imputed" = "dodgerblue3"))
+```
+
+```{r, 3: Analyzing CO2 dataset}
+library(ggplot2)
+library(dplyr)
+library(tidyr)
+
+data(CO2)
+
+# Quick summary by Type and Treatment
+CO2_summary <- CO2 %>%
+  group_by(Type, Treatment) %>%
+  summarise(
+    plants = n_distinct(Plant),
+    mean_uptake = round(mean(uptake), 2),
+    sd_uptake = round(sd(uptake), 2),
+    .groups = "drop"
+  )
+
+knitr::kable(CO2_summary, caption = "Summary of CO2 Uptake by Plant Type and Treatment")
+
+# Histograms to compare origin and treatment
+ggplot(CO2, aes(uptake)) +
+  geom_histogram(bins = 15, fill = "skyblue", color = "black") +
+  labs(title = "CO2 Uptake Distribution", x = "Uptake", y = "Frequency") +
+  theme_minimal()
+
+# Boxplots to compare origin and treatment
+ggplot(CO2, aes(x = Type, y = uptake, fill = Treatment)) +
+  geom_boxplot(alpha = 0.7) +
+  geom_jitter(width = 0.2, alpha = 0.5) +
+  labs(title = "CO2 Uptake by Origin and Treatment", x = "Plant Origin", y = "Uptake") +
+  theme_minimal() +
+  scale_fill_manual(values = c("lightblue", "salmon"))
+
+# Show uptake vs concentration for each plant origin
+ggplot(CO2, aes(conc, uptake, color = Type)) +
+  geom_point(alpha = 0.6) +
+  geom_smooth(method = "loess", se = TRUE) +
+  facet_wrap(~Treatment) +
+  labs(title = "CO2 Uptake Response to Concentration by Origin", x = "CO2 Concentration", y = "Uptake") +
+  theme_minimal() +
+  scale_color_brewer(palette = "Set1")
+
+#Overall distribution: CO2 uptake varies widely across plants, with most values clustered between 10–35.
+#Plant origin and treatment: Quebec plants generally show higher uptake than Mississippi plants. Chilling reduces uptake in both groups, but especially in Mississippi.
+#Concentration response: Uptake increases with CO2 concentration and then levels off, showing a saturation effect. Quebec non-chilled plants reach the highest levels.
+#Variation: Even within the same group, individual plants differ, so replication is important.
+
+```
