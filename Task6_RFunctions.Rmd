@@ -1,0 +1,75 @@
+---
+title: "Task6_RFunctions"
+author: "Beverly Ann Boyboy"
+date: "2025-09-25"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+###1. Write a function that calculates the ratio of the mean and the median of a given vector.
+```{r}
+# Function to calculate the ratio of mean to median
+mean_median_ratio <- function(x) {
+  # Remove NA values if present
+  x <- x[!is.na(x)]
+  
+  # Check if vector is empty after removing NAs
+  if (length(x) == 0) {
+    warning("Vector is empty or contains only NA values")
+    return(NA)
+  }
+  
+  # Calculate mean and median
+  mean_val <- mean(x)
+  median_val <- median(x)
+  
+  # Check for zero median to avoid division by zero
+  if (median_val == 0) {
+    warning("Median is zero, ratio calculation may not be meaningful")
+    return(Inf)
+  }
+  
+  # Calculate and return ratio
+  ratio <- mean_val / median_val
+  return(ratio)
+}
+```
+
+###2. Write a function that ignores the lowest and the highest value from a given vector and calculate the mean.
+```{r}
+# Function to calculate mean excluding lowest and highest values
+trimmed_mean_minmax <- function(x) {
+  # Remove NA values if present
+  x <- x[!is.na(x)]
+  
+  # Check if vector has enough elements
+  if (length(x) < 3) {
+    warning("Vector must have at least 3 elements to exclude min and max")
+    return(NA)
+  }
+  
+  # Remove one instance of minimum and maximum values
+  x <- x[-which.min(x)]  # Remove first minimum
+  x <- x[-which.max(x)]  # Remove first maximum
+  
+  # Calculate and return mean of remaining values
+  trimmed_mean <- mean(x)
+  return(trimmed_mean)
+}
+```
+
+###3. Explanation of why, how, and when not to use pipes
+
+WHY: Makes code clearer by showing actions in linear sequence  
+HOW: x %>% f() %>% g() applies functions step by step without temporary variables, improves readability, focuses on verbs not objects  
+WHEN NOT: >10 steps, multiple inputs/outputs, complex dependencies, functions using env or lazy evaluation
+
+###4. Explanation of the usage of the apply-family of functions
+WHY: Apply family functions replace loops with vectorized ops  
+HOW: apply() works for matrix/df rows/cols, lapply() for lists, sapply() for simplified list output, tapply() for vectors grouped by factors  
+BENEFITS: cleaner, compact, less error prone, faster, consistent across objects
+
+
